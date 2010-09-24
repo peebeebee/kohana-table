@@ -1321,6 +1321,27 @@ class Kohana_Table {
 		// return
 		return $html;
 	}
+
+	/**
+	 * Magic method, returns the output of table->render().
+	 *
+	 * @return  string
+	 * @uses    table->render()
+	 */
+	public function __toString()
+	{
+		try
+		{
+			return $this->render();
+		}
+		catch (Exception $e)
+		{
+			// Display the exception message
+			Kohana::exception_handler($e);
+			return '';
+		}
+	}
+
 } // End Kohana_Table
 
 
