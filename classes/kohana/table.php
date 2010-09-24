@@ -168,9 +168,31 @@ class Kohana_Table {
 		// check for ORM
 		if($data instanceof Database_Result)
 		{
-			foreach ($data as $orm => $value)
+			foreach ($data as $value)
 			{
 				array_push($this->body_data, $value->as_array());
+			}
+		}
+
+		// check for Jelly
+		else if($data instanceof Jelly_Collection)
+		{
+			foreach($data as $orm)
+			{
+				$obj = array();
+				$keys = $orm->as_array();
+				foreach($keys as $key => $value)
+				{
+					if($orm->{$key} instanceof Jelly_Model)
+					{
+						$obj[$key] = $orm->{$key}->name();
+					}
+					else
+					{
+						$obj[$key] = $orm->{$key};
+					}
+				}
+				array_push($this->body_data, $obj);
 			}
 		}
 
@@ -249,7 +271,7 @@ class Kohana_Table {
 		}
 		else
 		{
-			$data = func_generate_args();
+			$data = func_get_args();
 		}
 
 		// apply data
@@ -282,7 +304,7 @@ class Kohana_Table {
 		}
 		else
 		{
-			$data = func_generate_args();
+			$data = func_get_args();
 			$append = FALSE;
 		}
 
@@ -519,20 +541,41 @@ class Kohana_Table {
 	 *
 	 * Use the following method signatures in the callbacks
 	 *
-	 * 		body cells:			function body_cell_callback($value, $index, $key, $body_data, $user_data, $row_data, $column_data, $table)
-	 * 		heading cells:		heading_cell_callback($value, $key, $user_data, $column_data, $table)
-	 * 		column cells:		column_cell_callback($value, $index, $key, $body_data, $user_data, $row_data, $column_data, $table)
-	 * 		row-title cells:	row_title_cell_callback( $value, $body_data, $user_data,  $row_data, $table)
-	 * 		rows:				row_callback($row, $index, $body_data, $user_data, $row_data, $table)
+	 *     body cells:      function body_cell_callback($value, $index, $key, $body_data, $user_data, $row_data, $column_data, $table)
+	 *     heading cells:   heading_cell_callback($value, $key, $user_data, $column_data, $table)
+	 *     column cells:    column_cell_callback($value, $index, $key, $body_data, $user_data, $row_data, $column_data, $table)
+	 *     row-title cells: row_title_cell_callback( $value, $body_data, $user_data,  $row_data, $table)
+	 *     rows:            row_callback($row, $index, $body_data, $user_data, $row_data, $table)
 	 *
-	 * @param	string		$function_name	The function to call
-	 * @param	string		$type			The type of callback
-	 * @param	mixed		$keys			A single key or array of keys (column names)
-	 * @return
+	 * @param mixed $function The global function or class method to call
+	 * @param string $type The type of callback
+	 * @param mixed $keys A single key or array of keys (column names)
+	 * @return Kohana_Table
 	 */
-	public function set_callback($function_name, $type = 'body', $keys = NULL)
+	public function set_callback($function, $type = 'body', $keys = NULL)
 	{
-		if(function_exists($function_name))
+		// check that function exists
+
+		// static class method, i.e. "Foo::bar"
+		if(is_string($function) && strstr($function, '::') !== FALSE)
+		{
+			list($class, $method) = explode('::', $function);
+			$state = method_exists($class, $method);
+		}
+
+		// class method, i.e. array($this, "foo")
+		elseif(is_array($function))
+		{
+			$state = method_exists($function[0], $function[1]);
+		}
+
+		// global function, i.e. "foo"
+		else
+		{
+			$state = function_exists($function);
+		}
+		// if so, set the callback
+		if($state)
 		{
 			// setup
 			$type = str_replace(' ', '_', $type);
@@ -547,8 +590,8 @@ class Kohana_Table {
 				case 'body':
 				case 'heading':
 				case 'row_title':
-					$this->{'get_' . $type . '_cell_callback'} = $function_name;
-				break;
+					$this->{'get_' . $type . '_cell_callback'} = $function;
+					break;
 
 				case 'column':
 					if(!is_array($keys))
@@ -557,13 +600,13 @@ class Kohana_Table {
 					}
 					foreach($keys as $key)
 					{
-						$this->{'get_column_cell_callback'}[$key] = $function_name;
+						$this->{'get_column_cell_callback'}[$key] = $function;
 					}
-				break;
+					break;
 
 				case 'row':
-					$this->{'get_row_callback'} = $function_name;
-				break;
+					$this->{'get_row_callback'} = $function;
+					break;
 
 				default:
 					trigger_error("Callback types must be one of 'body', 'heading' (or 'column_title'), 'row', 'row_title', or 'column' (see class for method signatures) .", E_USER_WARNING);
@@ -571,7 +614,7 @@ class Kohana_Table {
 		}
 		else
 		{
-			trigger_error("Callback function '$function_name' doesn't exist!", E_USER_WARNING);
+			trigger_error("Callback function/method '$function' doesn't exist!", E_USER_WARNING);
 		}
 
 		return $this;
