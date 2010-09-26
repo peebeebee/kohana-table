@@ -85,39 +85,32 @@ class Kohana_Table {
 	/**
 	 * Class constructor
 	 *
-	 * @param   mixed  the body data (an array or object)
+	 * @param   array/object  the body data (an array or object)
 	 * @param   array  default attributes
 	 * @return  void
 	 */
-	public function __construct($body_data = NULL, $attributes = NULL)
+	public function __construct($body_data = NULL, array $attributes = NULL)
 	{
 		// body data
 		if(is_array($body_data) OR is_object($body_data))
 		{
 			$this->set_body_data($body_data);
 		}
-
-		// attributes
-		if(is_array($attributes))
+		foreach($attributes as $key=>$value)
 		{
-			foreach($attributes as $key=>$value)
-			{
-				$this->table_attributes[$key] = $value;
-			}
+			$this->table_attributes[$key] = $value;
 		}
 	}
-
-
 
 	/**
 	 * Create a chainable instance of the Table class
 	 *
-	 * @param   mixed  the body data (an array or object)
-	 * @param   array  default attributes
-	 * @param   boolean  the name of the custom class
-	 * @return  instance of table-class
+	 * @param  array/object  the body data (an array or object)
+	 * @param  array  default attributes
+	 * @param  boolean  the name of the custom class
+	 * @return Table
 	 */
-	public static function factory($body_data = NULL, $attributes = NULL, $custom_class = NULL)
+	public static function factory($body_data = NULL, array $attributes = NULL, $custom_class = NULL)
 	{
 		// test for a custom class
 		if(is_string($custom_class))
