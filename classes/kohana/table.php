@@ -86,10 +86,10 @@ class Kohana_Table {
 	 * Class constructor
 	 *
 	 * @param   mixed  the body data (an array or object)
-	 * @param   string  default attributes
+	 * @param   array  default attributes
 	 * @return  void
 	 */
-	public function __construct($body_data = NULL, $atrributes = NULL)
+	public function __construct($body_data = NULL, $attributes = NULL)
 	{
 		// body data
 		if(is_array($body_data) OR is_object($body_data))
@@ -98,9 +98,12 @@ class Kohana_Table {
 		}
 
 		// attributes
-		if(is_string($atrributes))
+		if(is_array($attributes))
 		{
-			$this->set_attributes($atrributes);
+			foreach($attributes as $key=>$value)
+			{
+				$this->table_attributes[$key] = $value;
+			}
 		}
 	}
 
@@ -110,7 +113,7 @@ class Kohana_Table {
 	 * Create a chainable instance of the Table class
 	 *
 	 * @param   mixed  the body data (an array or object)
-	 * @param   string  default attributes
+	 * @param   array  default attributes
 	 * @param   boolean  the name of the custom class
 	 * @return  instance of table-class
 	 */
@@ -487,40 +490,6 @@ class Kohana_Table {
 		return $this;
 	}
 
-
-	/**
-	 * set the attributes of the table.
-	 *
-	 * Pass a string of HTML attributes or the name and value of a single attribute.
-	 * Passing a NULL value deletes a property
-	 *
-	 * @param	mixed	attributes string or single attribute name
-	 * @param	string	attribute value
-	 * @return
-	 */
-	public function set_attributes($arg1, $arg2=NULL)
-	{
-		preg_match_all('/(\w+)\s*=\s*"([^"]*)"/', $arg1, $matches);
-		if(count($matches[0]) > 0)
-		{
-			for($i = 0; $i < count($matches[1]); $i++)
-			{
-				$this->table_attributes[$matches[1][$i]] = $matches[2][$i];
-			}
-		}
-		else
-		{
-			if($arg2 !== NULL)
-			{
-				$this->table_attributes[$arg1] = $arg2;
-			}
-			else
-			{
-				unset($this->table_attributes[$arg1]);
-			}
-		}
-		return $this;
-	}
 
 // -----------------------------------------------------------------------------------------------
 // DATA OUT: Cell rendering callback setter
@@ -1255,8 +1224,9 @@ class Kohana_Table {
 	/**
 	 * Render all table output as HTML
 	 *
-	 * @param bool $echo
+	 * @param  bool $echo
 	 * @return html
+	 * @uses   HTML::attributes
 	 */
 	public function render($echo = FALSE)
 	{
@@ -1267,11 +1237,7 @@ class Kohana_Table {
 		$has_structure = $this->foot_html != NULL || $this->head_html != NULL;
 
 		// attributes
-		$attributes = '';
-		foreach($this->table_attributes as $key => $value)
-		{
-			$attributes .= $key .'="' . $value .'" ';
-		}
+		$attributes = HTML::attributes($this->table_attributes);
 
 		// open the table
 		$html = '';
