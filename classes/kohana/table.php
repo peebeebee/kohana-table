@@ -85,55 +85,49 @@ class Kohana_Table {
 	/**
 	 * Class constructor
 	 *
-	 * @param mixed $attributes
-	 * @return
+	 * @param   mixed  the body data (an array or object)
+	 * @param   string  default attributes
+	 * @return  void
 	 */
-	public function __construct($arg1 = NULL, $arg2 = NULL)
+	public function __construct($body_data = NULL, $atrributes = NULL)
 	{
-		// attributes
-		if(is_string($arg1))
+		// body data
+		if(is_array($body_data) OR is_object($body_data))
 		{
-			$this->set_attributes($arg1);
-		}
-		elseif(is_array($arg1) OR is_object($arg1))
-		{
-			$this->set_body_data($arg1);
+			$this->set_body_data($body_data);
 		}
 
-		// body data
-		if(is_string($arg2))
+		// attributes
+		if(is_string($atrributes))
 		{
-			$this->set_attributes($arg2);
-		}
-		elseif(is_array($arg2) OR is_object($arg2))
-		{
-			$this->set_body_data($arg2);
+			$this->set_attributes($atrributes);
 		}
 	}
+
+
 
 	/**
 	 * Create a chainable instance of the Table class
 	 *
-	 * @param mixed $attributes
-	 * @return
+	 * @param   mixed  the body data (an array or object)
+	 * @param   string  default attributes
+	 * @param   boolean  the name of the custom class
+	 * @return  instance of table-class
 	 */
-	public static function factory($arg1 = NULL, $arg2 = NULL, $arg3 = NULL)
+	public static function factory($body_data = NULL, $attributes = NULL, $custom_class = NULL)
 	{
-		// test for class as the first argument
-		if(is_string($arg1) && strstr($arg1, '=') === FALSE)
+		// test for a custom class
+		if(is_string($custom_class))
 		{
-			$class = 'Table_Type_' . $arg1;
+			$class = 'Table_Type_' . $custom_class;
 			if(class_exists($class))
 			{
-				return new $class($arg2, $arg3);
+				return new $class($body_data, $attributes);
 			}
-			throw new Kohana_Exception("The class '$class' doesn't exist",
-										array(':method' => __METHOD__, ':class' => __CLASS__));
-
+			throw new Kohana_Exception("The class '$class' doesn't exist", array(':method' => __METHOD__, ':class' => __CLASS__));
 		}
-
-		// if not, pass along data / attributes
-		return new self($arg1, $arg2);
+		// if no custom class is set, just pass along data / attributes
+		return new self($body_data, $attributes);
 	}
 
 // -----------------------------------------------------------------------------------------------
