@@ -96,9 +96,12 @@ class Kohana_Table {
 		{
 			$this->set_body_data($body_data);
 		}
-		foreach($attributes as $key=>$value)
+		if($attributes !== NULL)
 		{
-			$this->table_attributes[$key] = $value;
+			foreach($attributes as $key=>$value)
+			{
+				$this->table_attributes[$key] = $value;
+			}
 		}
 	}
 
