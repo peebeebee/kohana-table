@@ -12,7 +12,7 @@
  * Add custom HTML at any point of the build process
  *
  * @package Table
- * @category Base
+ * @category Helper
  * @author Dave Stewart
  * @version 1.0
  * @access public
@@ -1306,40 +1306,35 @@ class Kohana_Table {
 /**
  * HTML_Element
  *
- * @package
- * @author Dave Stewart
+ * @package   Table
+ * @category  Helpers
+ * @author    Dave Stewart
  * @copyright
- * @version 2009
- * @access public
+ * @version   2010
+ * @access    public
  */
 abstract class HTML_Element {
 	public $tag					= '';
 	public $content				= '';
-	public $class				= '';
-	public $style				= '';
-	public $attributes			= '';
+	public $attributes			= array();
 
 	/**
 	 * Constructor
 	 *
 	 * @param string $content
-	 * @param string $class
-	 * @param string $style
-	 * @param string $attributes
-	 * @return
+	 * @param array $attributes
+	 * @return void
 	 */
-	public function __construct($content = '', $class = '', $style = '', $attributes = '')
+	public function __construct($content = '', array $attributes = NULL)
 	{
 		$this->content		= $content;
-		$this->class		= $class;
-		$this->style		= $style;
 		$this->attributes	= $attributes;
 	}
 
 	/**
 	 * Return cell HTML
 	 *
-	 * @return
+	 * @return html
 	 */
 	public function html()
 	{
@@ -1349,31 +1344,22 @@ abstract class HTML_Element {
 	/**
 	 * Return start tag HTML
 	 *
-	 * @return
+	 * @return html
 	 */
 	public function open()
 	{
-		$atts = '';
-
-		if($this->class !== '')
+		$attr = '';
+		if($this->attributes !== NULL)
 		{
-			$atts .= ' class="' .$this->class. '"';
+			$attr = HTML::attributes($this->attributes);
 		}
-		if($this->style !== '')
-		{
-			$atts .= ' style="' .$this->style. '"';
-		}
-		if($this->attributes !== '')
-		{
-			$atts .= ' ' .$this->attributes;
-		}
-		return '<' .$this->tag.$atts. '>';
+		return '<' .$this->tag.$attr. '>';
 	}
 
 	/**
 	 * Return end tag HTML
 	 *
-	 * @return
+	 * @return html
 	 */
 	public function close()
 	{
